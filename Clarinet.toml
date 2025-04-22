@@ -5,8 +5,43 @@ authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
+[contracts.collateral-management]
+path = 'contracts/collateral-management.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.loan-management]
+path = 'contracts/loan-management.clar'
+clarity_version = 3
+epoch = 3.1
+
 [contracts.loan_lifecycle_management]
 path = 'contracts/loan_lifecycle_management.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.maps]
+path = 'contracts/maps.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.reputation]
+path = 'contracts/reputation.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.utils]
+path = 'contracts/utils.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.variables]
+path = 'contracts/variables.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.view-functions]
+path = 'contracts/view-functions.clar'
 clarity_version = 3
 epoch = 3.1
 [repl.analysis]

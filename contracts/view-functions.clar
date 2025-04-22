@@ -1,30 +1,17 @@
+(define-read-only (get-loan (loan-id uint))
+    (map-get? loans { loan-id: loan-id }))
 
-;; title: view-functions
-;; version:
-;; summary:
-;; description:
+(define-read-only (get-user-reputation (user principal))
+    (map-get? user-reputation { user: user }))
 
-;; traits
-;;
+(define-read-only (get-contract-status)
+    (var-get emergency-stopped))
 
-;; token definitions
-;;
+(define-read-only (get-contract-owner)
+    (var-get contract-owner))
 
-;; constants
-;;
-
-;; data vars
-;;
-
-;; data maps
-;;
-
-;; public functions
-;;
-
-;; read only functions
-;;
-
-;; private functions
-;;
-
+(define-read-only (calculate-total-due (loan-id uint))
+    (match (map-get? loans { loan-id: loan-id })
+        loan (ok (+ (get amount loan) 
+                    (/ (* (get amount loan) (get interest-rate loan)) u100)))
+        ERR-LOAN-NOT-FOUND))

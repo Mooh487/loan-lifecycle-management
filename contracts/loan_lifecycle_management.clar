@@ -1,9 +1,9 @@
 
 ;; microlending
-;; This smart contract implements an enhanced microlending platform with robust security features. 
-;; It allows users to create and manage loans backed by collateral assets. The contract includes 
-;; mechanisms for collateral management, price feed updates, loan creation, and liquidation. 
-;; It also features an emergency stop function to halt operations in critical situations and 
+;; This smart contract implements an enhanced microlending platform with robust security features.
+;; It allows users to create and manage loans backed by collateral assets. The contract includes
+;; mechanisms for collateral management, price feed updates, loan creation, and liquidation.
+;; It also features an emergency stop function to halt operations in critical situations and
 ;; maintains user reputation based on loan repayment history.
 
 ;; Error Codes
@@ -41,17 +41,17 @@
 (define-data-var next-loan-id uint u1)
 
 ;; Whitelist for Collateral Assets
-(define-map allowed-collateral-assets 
-    { asset: (string-ascii 20) } 
+(define-map allowed-collateral-assets
+    { asset: (string-ascii 20) }
     { is-active: bool }
 )
 
 ;; Price Feed Simulation
-(define-map asset-prices 
-    { asset: (string-ascii 20) } 
-    { 
-        price: uint, 
-        last-updated: uint 
+(define-map asset-prices
+    { asset: (string-ascii 20) }
+    {
+        price: uint,
+        last-updated: uint
     }
 )
 
@@ -76,9 +76,9 @@
 ;; User Loans Tracking
 (define-map user-loans
     { user: principal }
-    { 
+    {
         active-loans: (list 20 uint),
-        total-active-borrowed: uint 
+        total-active-borrowed: uint
     }
 )
 
@@ -133,10 +133,10 @@
 
 (define-private (get-current-asset-price (asset (string-ascii 20)))
     (match (map-get? asset-prices { asset: asset })
-        price-info 
-        (if (and 
+        price-info
+        (if (and
                 (> (get price price-info) u0)
-                (< (- block-height (get last-updated price-info)) MAX-PRICE-AGE)
+                (< (- burn-block-height (get last-updated price-info)) MAX-PRICE-AGE)
             )
             (ok (get price price-info))
             (err ERR-PRICE-FEED-FAILURE)
@@ -147,11 +147,11 @@
 
 (define-private (is-collateral-above-liquidation-threshold (loan-id uint))
     (match (map-get? loans { loan-id: loan-id })
-        loan 
+        loan
         (match (get-current-asset-price (get collateral-asset loan))
-            current-price-ok 
+            current-price-ok
             (>= current-price-ok (get liquidation-price-threshold loan))
-            err-code 
+            err-code
             false
         )
         false
@@ -161,11 +161,11 @@
 (define-private (update-user-reputation (user principal) (success bool))
     (let (
         (current-reputation (default-to
-            { 
-                successful-repayments: u0, 
-                defaults: u0, 
+            {
+                successful-repayments: u0,
+                defaults: u0,
                 total-borrowed: u0,
-                reputation-score: u100 
+                reputation-score: u100
             }
             (map-get? user-reputation { user: user })
         ))
@@ -182,11 +182,11 @@
     (map-set user-reputation
         { user: user }
         {
-            successful-repayments: (if success 
+            successful-repayments: (if success
                 (+ (get successful-repayments current-reputation) u1)
                 (get successful-repayments current-reputation)
             ),
-            defaults: (if success 
+            defaults: (if success
                 (get defaults current-reputation)
                 (+ (get defaults current-reputation) u1)
             ),
@@ -211,8 +211,8 @@
     (begin
         (asserts! (is-authorized) ERR-NOT-AUTHORIZED)
         (asserts! (> (len asset) u0) ERR-INVALID-AMOUNT)
-        (map-set allowed-collateral-assets 
-            { asset: asset } 
+        (map-set allowed-collateral-assets
+            { asset: asset }
             { is-active: true }
         )
         (ok true)
@@ -223,8 +223,8 @@
     (begin
         (asserts! (is-authorized) ERR-NOT-AUTHORIZED)
         (asserts! (> (len asset) u0) ERR-INVALID-AMOUNT)
-        (map-set allowed-collateral-assets 
-            { asset: asset } 
+        (map-set allowed-collateral-assets
+            { asset: asset }
             { is-active: false }
         )
         (ok true)
@@ -238,11 +238,11 @@
         (asserts! (> (len asset) u0) ERR-INVALID-AMOUNT)
         (asserts! (> price u0) ERR-INVALID-AMOUNT)
         (asserts! (is-valid-collateral-asset asset) ERR-INVALID-COLLATERAL-ASSET)
-        (map-set asset-prices 
+        (map-set asset-prices
             { asset: asset }
-            { 
-                price: price, 
-                last-updated: block-height 
+            {
+                price: price,
+                last-updated: burn-block-height
             }
         )
         (ok true)
@@ -250,19 +250,19 @@
 )
 
 ;; Enhanced Loan Creation
-(define-public (create-loan-request 
-    (amount uint) 
-    (collateral uint) 
-    (collateral-asset (string-ascii 20)) 
-    (duration uint) 
+(define-public (create-loan-request
+    (amount uint)
+    (collateral uint)
+    (collateral-asset (string-ascii 20))
+    (duration uint)
     (interest-rate uint)
 )
     (let
         (
             (loan-id (var-get next-loan-id))
             (tx-sender-account tx-sender)
-            (current-asset-price (unwrap! 
-                (get-current-asset-price collateral-asset) 
+            (current-asset-price (unwrap!
+                (get-current-asset-price collateral-asset)
                 ERR-PRICE-FEED-FAILURE
             ))
         )
@@ -272,20 +272,20 @@
         (asserts! (> collateral u0) ERR-INSUFFICIENT-COLLATERAL)
         (asserts! (is-sufficient-collateral amount collateral) ERR-INSUFFICIENT-COLLATERAL)
         (asserts! (is-valid-collateral-asset collateral-asset) ERR-INVALID-COLLATERAL-ASSET)
-        
+
         ;; Enhanced Validation Checks
-        (asserts! 
-            (and 
-                (>= duration MIN-DURATION) 
+        (asserts!
+            (and
+                (>= duration MIN-DURATION)
                 (<= duration MAX-DURATION)
-            ) 
+            )
             ERR-INVALID-DURATION
         )
-        (asserts! 
-            (<= interest-rate MAX-INTEREST-RATE) 
+        (asserts!
+            (<= interest-rate MAX-INTEREST-RATE)
             ERR-INVALID-INTEREST-RATE
         )
-        
+
         ;; Loan Creation with Enhanced Tracking
         (map-set loans
             { loan-id: loan-id }
@@ -295,7 +295,7 @@
                 collateral-amount: collateral,
                 collateral-asset: collateral-asset,
                 interest-rate: interest-rate,
-                start-height: block-height,
+                start-height: burn-block-height,
                 duration: duration,
                 status: "PENDING",
                 lenders: (list),
@@ -303,27 +303,27 @@
                 liquidation-price-threshold: (calculate-liquidation-threshold current-asset-price)
             }
         )
-        
+
         ;; Update User Loans with Total Borrowed Tracking
-        (let ((existing-user-loans (default-to 
+        (let ((existing-user-loans (default-to
             { active-loans: (list), total-active-borrowed: u0 }
             (map-get? user-loans { user: tx-sender-account }))))
             (map-set user-loans
                 { user: tx-sender-account }
-                { 
-                    active-loans: (unwrap-panic (as-max-len? 
+                {
+                    active-loans: (unwrap-panic (as-max-len?
                         (append (get active-loans existing-user-loans) loan-id) u20)),
-                    total-active-borrowed: (+ 
-                        (get total-active-borrowed existing-user-loans) 
+                    total-active-borrowed: (+
+                        (get total-active-borrowed existing-user-loans)
                         amount
                     )
                 }
             )
         )
-        
+
         ;; Increment and Update Loan Tracking
         (var-set next-loan-id (+ loan-id u1))
-        
+
         (ok loan-id)
     )
 )
@@ -334,17 +334,17 @@
         ;; First validate the loan-id is within valid range
         (asserts! (> loan-id u0) ERR-LOAN-NOT-FOUND)
         (asserts! (< loan-id (var-get next-loan-id)) ERR-LOAN-NOT-FOUND)
-        
+
         (let ((loan (unwrap! (map-get? loans { loan-id: loan-id }) ERR-LOAN-NOT-FOUND)))
             (begin
                 (asserts! (is-authorized) ERR-NOT-AUTHORIZED)
                 (asserts! (is-eq (get status loan) "PENDING") ERR-LOAN-ALREADY-ACTIVE)
-                
+
                 (map-set loans
                     { loan-id: loan-id }
-                    (merge loan { 
+                    (merge loan {
                         status: "ACTIVE",
-                        start-height: block-height
+                        start-height: burn-block-height
                     })
                 )
                 (ok true)
@@ -358,32 +358,32 @@
     (begin
         ;; Validate loan-id
         (asserts! (> loan-id u0) ERR-LOAN-NOT-FOUND)
-        
+
         (let (
             (loan (unwrap! (map-get? loans { loan-id: loan-id }) ERR-LOAN-NOT-FOUND))
         )
             ;; Comprehensive Liquidation Checks
             (asserts! (is-contract-active) ERR-EMERGENCY-STOP)
             (asserts! (is-eq (get status loan) "ACTIVE") ERR-LOAN-NOT-ACTIVE)
-            
+
             ;; Dual Liquidation Triggers: Time AND Collateral Value
-            (asserts! 
-                (or 
-                    (> block-height (+ (get start-height loan) (get duration loan)))
+            (asserts!
+                (or
+                    (> burn-block-height (+ (get start-height loan) (get duration loan)))
                     (not (is-collateral-above-liquidation-threshold loan-id))
-                ) 
+                )
                 ERR-LOAN-NOT-DEFAULTED
             )
-            
+
             ;; Update Loan Status and Reputation
             (map-set loans
                 { loan-id: loan-id }
                 (merge loan { status: "LIQUIDATED" })
             )
-            
+
             ;; Update Borrower Reputation with Severe Penalty
             (update-user-reputation (get borrower loan) false)
-            
+
             (ok true)
         )
     )
@@ -409,8 +409,8 @@
 
 (define-read-only (calculate-total-due (loan-id uint))
     (match (map-get? loans { loan-id: loan-id })
-        loan (ok (+ 
-            (get amount loan) 
+        loan (ok (+
+            (get amount loan)
             (/ (* (get amount loan) (get interest-rate loan)) u100)
         ))
         ERR-LOAN-NOT-FOUND

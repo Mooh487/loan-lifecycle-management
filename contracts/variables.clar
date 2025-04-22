@@ -1,0 +1,33 @@
+;; Error Codes
+(define-constant ERR-NOT-AUTHORIZED (err u1000))
+(define-constant ERR-INVALID-AMOUNT (err u1001))
+(define-constant ERR-INSUFFICIENT-COLLATERAL (err u1002))
+(define-constant ERR-LOAN-NOT-FOUND (err u1003))
+(define-constant ERR-LOAN-ALREADY-ACTIVE (err u1004))
+(define-constant ERR-LOAN-NOT-ACTIVE (err u1005))
+(define-constant ERR-LOAN-NOT-DEFAULTED (err u1006))
+(define-constant ERR-INVALID-LIQUIDATION (err u1007))
+(define-constant ERR-INVALID-REPAYMENT (err u1008))
+(define-constant ERR-INVALID-DURATION (err u1009))
+(define-constant ERR-INVALID-INTEREST-RATE (err u1010))
+(define-constant ERR-EMERGENCY-STOP (err u1011))
+(define-constant ERR-PRICE-FEED-FAILURE (err u1012))
+(define-constant ERR-INVALID-COLLATERAL-ASSET (err u1013))
+(define-constant tx-sender-zero (as-contract tx-sender))
+
+;; Constants
+(define-constant MIN-COLLATERAL-RATIO u200)
+(define-constant MAX-INTEREST-RATE u5000)
+(define-constant MIN-DURATION u1440)
+(define-constant MAX-DURATION u525600)
+(define-constant LIQUIDATION-THRESHOLD u80)
+(define-constant MAX-PRICE-AGE u1440)
+(define-constant MIN-REPUTATION-SCORE u0)
+(define-constant MAX-REPUTATION-SCORE u200)
+(define-constant REPUTATION_PENALTY u20)
+(define-constant REPUTATION_REWARD u10)
+
+;; State Variables
+(define-data-var emergency-stopped bool false)
+(define-data-var contract-owner principal tx-sender)
+(define-data-var next-loan-id uint u1)
